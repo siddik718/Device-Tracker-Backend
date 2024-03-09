@@ -1,15 +1,19 @@
 const { validationResult, matchedData } = require("express-validator");
+const mongoose = require("mongoose");
+
+const validateId = (value) => {
+  if (!mongoose.Types.ObjectId.isValid(value)) {
+    throw new Error("Invalid ObjectId");
+  }
+  return true;
+}
+
 
 function validateEmail(email) {
   const re = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
   return re.test(email);
 }
 
-function validatePassword(password) {
-  const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>]).{8,}$/;
-  return passwordRegex.test(password);
-}
 
 function validateSchema(req,res,next) {
   const result = validationResult(req);
@@ -23,8 +27,9 @@ function validateSchema(req,res,next) {
   }
 }
 
+
 module.exports = {
   validateEmail,
-  validatePassword,
   validateSchema,
+  validateId,
 };

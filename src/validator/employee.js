@@ -1,18 +1,12 @@
-const mongoose = require("mongoose");
 
 const validationSchemaForEmployee = {
   dept: {
     trim: true,
     notEmpty: {
-      errorMessage: "Dept ID must be given",
+      errorMessage: "Dept name must be given",
     },
-    custom: {
-      options: (value) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          throw new Error("Invalid ObjectId");
-        }
-        return true;
-      },
+    isString: {
+      errorMessage: "Dept name must be String",
     },
   },
   name: {

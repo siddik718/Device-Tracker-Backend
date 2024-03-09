@@ -1,34 +1,25 @@
-const mongoose = require("mongoose");
+
+const { validateId } = require("../utils/validator");
 const validationSchemaForRecord = {
-  model: {
+  device: {
     trim: true,
     notEmpty: {
       errorMessage: "Device ID must be given",
     },
     custom: {
-      options: (value) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          throw new Error("Invalid ObjectId");
-        }
-        return true;
-      },
+      options: value => validateId(value),
     },
   },
-  allocatedTo: {
+  employee: {
     trim: true,
     notEmpty: {
       errorMessage: "Employee ID must be given",
     },
     custom: {
-      options: (value) => {
-        if (!mongoose.Types.ObjectId.isValid(value)) {
-          throw new Error("Invalid ObjectId");
-        }
-        return true;
-      },
+      options: value => validateId(value),
     },
   },
-  givenCondition: {
+  condition: {
     trim: true,
     notEmpty: {
       errorMessage: "Given Condition Must Be Given",
@@ -38,4 +29,9 @@ const validationSchemaForRecord = {
     },
   },
 };
+
+
+
+
+
 module.exports = validationSchemaForRecord;

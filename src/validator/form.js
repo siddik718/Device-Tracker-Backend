@@ -63,19 +63,7 @@ const validationSchemaForLogin = {
     },
   },
 };
-const validationSchemaForBranch = {
-  branch: {
-    trim: true,
-    notEmpty: {
-      errorMessage: "Must provide Branch Name",
-    },
-    isString: {
-      errorMessage: "Branch Name must be string",
-    }
-  },
-};
 module.exports = {
   validationSchemaForSignup,
   validationSchemaForLogin,
-  validationSchemaForBranch,
 };

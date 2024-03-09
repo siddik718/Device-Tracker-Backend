@@ -2,15 +2,15 @@ const { Schema, model } = require("mongoose");
 
 const schema = new Schema(
   {
-    company: {
+    organization: {
       type: Schema.Types.ObjectId,
-      ref: "Company",
+      ref: "Organization",
     },
-    model: {
+    device: {
       type: Schema.Types.ObjectId,
       ref: "Device",
     },
-    allocatedTo: {
+    employee: {
       type: Schema.Types.ObjectId,
       ref: "Employee",
     },
@@ -18,16 +18,16 @@ const schema = new Schema(
       type: Date,
       default: Date.now,
     },
-    givenCondition: {
+    condition: {
       type: String,
       required: [true, "Please Give Condition details"],
     },
-    backCondition: {
+    returnCondition: {
       type: String,
     },
-    currentEmployee: {
+    available: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   { timestamps: true }

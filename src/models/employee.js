@@ -3,13 +3,13 @@ const { validateEmail } = require("../utils/validator");
 
 const schema = new Schema(
   {
-    company: {
+    organization: {
       type: Schema.Types.ObjectId,
-      ref: 'Company',
+      ref: 'Organization',
     },
     dept: {
-      type: Schema.Types.ObjectId,
-      ref: "Department",
+      type: String,
+      required: [true, "Employee Dept Should be given"],
     },
     name: {
       type: String,

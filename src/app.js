@@ -1,24 +1,29 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
-const companyRouter = require('./routes/company.js');
-const departmentRouter = require('./routes/department.js');
-const employeeRouter = require('./routes/empolyee.js');
-const deviceRouter = require('./routes/device.js');
-const recordRouter = require('./routes/record.js');
+// Import Routes
+const authRouter = require("./routes/auth.routes.js");
+const deviceRouter = require("./routes/device.routes.js");
+const employeeRouter = require("./routes/empolyee.routes.js");
+const organizationRouter = require("./routes/organization.routes.js");
+const departmentRouter = require("./routes/department.routes.js");
+const recordRouter = require("./routes/record.routes.js");
 
 const app = express();
 
 // MiddleWires.
+app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
-// Import Routes.
-app.use('/api/company',companyRouter);
-app.use('/api/dept',departmentRouter);
-app.use('/api/emp',employeeRouter);
-app.use('/api/dev',deviceRouter);
-app.use('/api/rec',recordRouter);
+// Routes
+app.use("/api/auth", authRouter);
+app.use("/api/dev", deviceRouter);
+app.use("/api/rec", recordRouter);
+app.use("/api/emp", employeeRouter);
+app.use("/api/org", organizationRouter);
+app.use("/api/dept", departmentRouter);
 
 module.exports = app;
