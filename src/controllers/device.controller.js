@@ -1,11 +1,42 @@
 const Device = require("../models/device.js");
+const Record = require("../models/record.js");
 const { raise } = require("../utils/err.js");
 const { successMessage } = require("../utils/response.js");
 
 const getDevices = async (req, res, next) => {
   const { org } = req;
   try {
-    const all = await Device.find({ organization: org._id });
+    const all = await Device.aggregate([
+      {
+        $match: {
+          organization: org._id,
+        },
+      },
+      {
+        $group: {
+          _id: "$Type",
+          devices: {
+            $push: {
+              _id: "$_id",
+              description: "$description",
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          "devices.updatedAt": -1,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          devices: {
+            $slice: ["$devices", 2],
+          },
+        },
+      },
+    ]);
     return successMessage(res, 200, "Sucessfully Returned Data", all);
   } catch (error) {
     next(error);
@@ -15,9 +46,13 @@ const getDevices = async (req, res, next) => {
 const addDevice = async (req, res, next) => {
   const { org, body } = req;
   try {
+    const isNameDuplicate = await Device.findOne({
+      $and: [{ organization: org._id }, { name: body.name }],
+    });
+    if (isNameDuplicate) raise(409, "Already Have a Device with same name.");
     const newDevice = new Device({ organization: org._id, ...body });
-    newDevice.save();
-    return successMessage(res, 200, "Sucessfully Added new Device", newDevice);
+    await newDevice.save();
+    return successMessage(res, 201, "Sucessfully Added new Device", newDevice);
   } catch (error) {
     next(error);
   }
@@ -30,7 +65,9 @@ const update = async (req, res, next) => {
     if (!device) {
       raise(404, "No Device Found");
     }
-    device = await Device.findByIdAndUpdate(deviceId, req.body, { new: true });
+    device = await Device.findByIdAndUpdate(deviceId, req.body, {
+      new: true,
+    }).select("_id descrip");
     return successMessage(res, 200, "Sucessfully Updated Device", device);
   } catch (error) {
     next(error);
@@ -68,8 +105,14 @@ const typeWiseDevice = async (req, res, next) => {
         },
       },
       {
+        $sort: {
+          updatedAt: -1,
+        },
+      },
+      {
         $project: {
-          organization: 0,
+          description: 1,
+          name: 1,
         },
       },
     ]);
@@ -79,10 +122,42 @@ const typeWiseDevice = async (req, res, next) => {
   }
 };
 
+const devicesName = async (req, res, next) => {
+  try {
+    const names = await Device.find({ organization: req.org._id }).select(
+      "name"
+    );
+    return successMessage(res, 200, "Devices", names);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deviceStat = async (req, res, next) => {
+  try {
+    const { _id } = req.org;
+    const totalDevices = await Device.countDocuments({ organization: _id });
+    const allocatedDevices = await Record.countDocuments({
+      organization: _id,
+      available: false,
+    });
+    const notAllocatedDevices = totalDevices - allocatedDevices;
+    return successMessage(res, 200, "Device stat", {
+      totalDevices,
+      allocatedDevices,
+      notAllocatedDevices,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getDevices,
   addDevice,
   update,
   remove,
   typeWiseDevice,
+  devicesName,
+  deviceStat,
 };

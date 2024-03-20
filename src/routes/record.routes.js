@@ -25,12 +25,12 @@ const validateObjectId = param("recId").custom((value) => {
 
 router.get("/", isLoggedIn, recordMany);
 
-router.get("/organization", isLoggedIn, recordsOfAOrganization);
+router.get("/one", isLoggedIn, recordsOfAOrganization);
+
 router.get("/device", isLoggedIn, recordsOfADevice);
 router.get("/employee", isLoggedIn, recordsOfAEmployee);
 
 router.get("/:recId", validateObjectId, validateSchema, isLoggedIn, recordOne);
-
 
 router.post(
   "/",
@@ -39,7 +39,17 @@ router.post(
   isLoggedIn,
   add
 );
-router.patch('/',updateRecord);
+
+// Patch Requests..
+router.patch(
+  "/:recId",
+  validateObjectId,
+  validateSchema,
+  isLoggedIn,
+  updateRecord
+);
+
+// Delete Requests..
 router.delete("/:recId", validateObjectId, validateSchema, isLoggedIn, remove);
 
 router.use((req, res, next) => {

@@ -8,6 +8,15 @@ const validationSchemaForDevice = {
       errorMessage: "Type Must Be String",
     },
   },
+  name: {
+    trim: true,
+    notEmpty: {
+      errorMessage: "Must provide name of The Device",
+    },
+    isString: {
+      errorMessage: "Type Must Be String",
+    },
+  },
   description: {
     trim: true,
     notEmpty: {

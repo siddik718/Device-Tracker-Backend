@@ -9,7 +9,9 @@ const { validateId } = require("../utils/validator.js");
 const recordMany = async (req, res, next) => {
   const { org } = req;
   try {
-    const records = await Record.find({ organization: org._id });
+    const records = await Record.find({ organization: org._id }).select(
+      "available condition device employee givenDate returnCondition returnDate"
+    );
     return successMessage(res, 200, "Successfully Return data", records);
   } catch (error) {
     next(error);
@@ -33,11 +35,12 @@ const add = async (req, res, next) => {
   const { body, org } = req;
   try {
     // Check if device exist.
-    const device = await Device.findById(body.device);
-    const employee = await Employee.findById(body.employee);
+    const device = await Device.findOne({ name: body.device });
+    const employee = await Employee.findOne({ name: body.employee });
     if (!device || !employee) {
-      raise(404, "Invalid Device or employee id");
+      raise(404, "Invalid Device or employee name");
     }
+    // console.log(device,employee,body);
     // check if already record is saved .
     const alreadyAllocatedToOther = await Record.findOne({
       $and: [{ device: body.device }, { available: false }],
@@ -50,8 +53,9 @@ const add = async (req, res, next) => {
       organization: org._id,
       ...body,
     });
+
     await new_record.save();
-    employee.allocatedDevice.push(body.device);
+    employee.allocatedDevice.push(device._id);
     await employee.save();
     return successMessage(res, 201, "Sucessfully Saved Records", new_record);
   } catch (error) {
@@ -76,15 +80,13 @@ const remove = async (req, res, next) => {
 const recordsOfAOrganization = async (req, res, next) => {
   try {
     const { org } = req;
-    const records = await Record.find(
-      { organization: org._id, available: false },
-      {
-        device: 0,
-        employee: 0,
-        organization: 0,
-      }
-    );
-    return successMessage(res, 200, "all records", records);
+    const records = await Record.findOne({ organization: org._id })
+      .select(
+        "available condition device employee givenDate returnCondition returnDate"
+      )
+      .sort({ updatedAt: -1 });
+
+    return successMessage(res, 200, "Recent record", records);
   } catch (error) {
     next(error);
   }
@@ -138,21 +140,30 @@ const recordsOfAEmployee = async (req, res, next) => {
 
 const updateRecord = async (req, res, next) => {
   try {
-    const { returnCondition, employeeId, deviceId } = req.body;
-    if (!returnCondition || !employeeId || !deviceId) {
-      raise(
-        404,
-        "Must provide returnCondition , employeeId and deviceId in the req body"
-      );
+    const { recId } = req.params;
+    const { returnCondition } = req.body;
+    // console.log(req.body);
+    if (!returnCondition) {
+      raise(404, "Must provide returnCondition in the req body");
     }
-    validateId(employeeId);
-    validateId(deviceId);
-    const update_record = await Record.updateOne(
-      { $and: [{ device: deviceId }, { employee: employeeId }] },
-      { $set: { returnCondition: returnCondition, available: true } },
+    // const update_record = await Record.updateOne(
+    //   { $and: [{ device: deviceId }, { employee: employeeId }] },
+    //   { $set: { returnCondition: returnCondition, available: true } },
+    //   { new: true }
+    // ).select("-organization -device -employee");
+    const update_record = await Record.findByIdAndUpdate(
+      recId,
+      {
+        $set: {
+          returnCondition: returnCondition,
+          available: true,
+          returnDate: new Date(),
+        },
+      },
       { new: true }
-    ).select("-organization -device -employee");
-    return successMessage(res, 200, "Data Updated", update_record);
+    );
+
+    return successMessage(res, 200, "Record Updated", update_record);
   } catch (error) {
     next(error);
   }

@@ -8,10 +8,7 @@ const addEmployee = async (req, res, next) => {
   const { org, body } = req;
   try {
     let employee = await Employee.findOne({
-      $or: [
-        { email: body.email },
-        { nid: body.nid }
-      ]
+      $or: [{ email: body.email }, { nid: body.nid }],
     });
     if (employee) {
       raise(406, "Employee Already Exist with the same email/NID");
@@ -29,19 +26,15 @@ const addEmployee = async (req, res, next) => {
     await employee.save();
     department.employees.push(employee._id);
     await department.save();
-    return successMessage(
-      res,
-      200,
-      "Sucessfully Added Employee Data",
-      {
-        employee,
-        department
-      }
-    );
+    return successMessage(res, 201, "Sucessfully Created Employee Data", {
+      employee,
+      department,
+    });
   } catch (error) {
     next(error);
   }
 };
+
 const update = async (req, res, next) => {
   const {
     org,
@@ -57,7 +50,10 @@ const update = async (req, res, next) => {
     }
     const employee = await Employee.findByIdAndUpdate(empId, body, {
       new: true,
-    });
+    })
+      .populate("allocatedDevice")
+      .select("-organization");
+
     if (!employee) raise(404, "No Employee Found");
     return successMessage(res, 200, "Sucessfully Updated Employee", employee);
   } catch (error) {
@@ -69,12 +65,21 @@ const remove = async (req, res, next) => {
   const { empId } = req.params;
   try {
     let employee = await Employee.findById(empId);
-    if(!employee) raise(404,'No Employee Found');
+    if (!employee) raise(404, "No Employee Found");
+
     // Find Department to remove employee .
-    let department = await Department.findOne({name: employee.dept});
-    if(!department) raise(404,'No Department Found');
+    let department = await Department.findOne({ name: employee.dept });
+    if (!department) raise(404, "No Department Found");
+
+    // If the empId matches the manager of the department, clear the manager field.
+    if (department.manager && department.manager.equals(empId)) {
+      department.manager = null;
+    }
+
+    // Remove employee from department's employees list.
     department.employees.pull(employee._id);
     await department.save();
+
     // remove employee .
     await Employee.findByIdAndDelete(empId);
     return successMessage(res, 200, "Sucessfully Removed Employee Data");
@@ -82,6 +87,7 @@ const remove = async (req, res, next) => {
     next(error);
   }
 };
+
 const filterEmployee = async (req, res, next) => {
   try {
     const filter = req.query.filter;
@@ -135,6 +141,7 @@ const filterEmployee = async (req, res, next) => {
     next(error);
   }
 };
+
 const totalEmployee = async (req, res, next) => {
   const org = req.org;
   try {
@@ -146,10 +153,55 @@ const totalEmployee = async (req, res, next) => {
     next(error);
   }
 };
+
+const employees = async (req, res, next) => {
+  try {
+    const emps = await Employee.find({ organization: req.org._id }).select(
+      "name dept designation email"
+    );
+    return successMessage(res, 200, "Data Returned", emps);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const employee = async (req, res, next) => {
+  try {
+    const { empId } = req.params;
+    const result = await Employee.findById(empId)
+      .populate("allocatedDevice")
+      .select("-organization");
+    if (!result) raise(404, "No Employee Found..");
+    return successMessage(res, 200, "Data Found", result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const lastEmployee = async (req, res, next) => {
+  try {
+    const emp = await Employee.findOne(
+      { organization: req.org._id },
+      {
+        name: 1,
+        dept: 1,
+        designation: 1,
+        email: 1,
+      }
+    ).sort({ createdAt: -1 });
+    return successMessage(res,200,'Recent Employee',emp);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   addEmployee,
   update,
   remove,
   filterEmployee,
   totalEmployee,
+  employees,
+  employee,
+  lastEmployee,
 };

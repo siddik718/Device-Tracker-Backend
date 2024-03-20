@@ -3,18 +3,18 @@ const {
   addDevice,
   update,
   remove,
-  typeWiseDevice
+  typeWiseDevice,
+  devicesName,
+  deviceStat,
 } = require("../controllers/device.controller.js");
 
 const { validateSchema } = require("../utils/validator.js");
 const validationSchemaForDevice = require("../validator/device.js");
 const { isLoggedIn } = require("../middlewires/auth.js");
 
-
 const mongoose = require("mongoose");
-const { checkSchema, body,param } = require("express-validator");
+const { checkSchema, body, param } = require("express-validator");
 const router = require("express").Router();
-
 
 const validateBodyNotEmpty = body().custom((value) => {
   if (Object.keys(value).length === 0) {
@@ -34,8 +34,10 @@ const validateObjectId = param("deviceId").custom((value) => {
 // router.post('/dummy',dummy);
 
 router.get("/", isLoggedIn, getDevices);
+router.get("/names", isLoggedIn, devicesName);
+router.get("/one", isLoggedIn, deviceStat);
 
-router.get('/search',isLoggedIn,typeWiseDevice);
+router.get("/search", isLoggedIn, typeWiseDevice);
 
 router.post(
   "/",

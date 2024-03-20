@@ -7,16 +7,19 @@ const schema = new Schema(
       ref: "Organization",
     },
     device: {
-      type: Schema.Types.ObjectId,
-      ref: "Device",
+      type: String,
+      required: [true, "Please Give device name"],
     },
     employee: {
-      type: Schema.Types.ObjectId,
-      ref: "Employee",
+      type: String,
+      required: [true, "Please Give employee name"],
     },
     givenDate: {
       type: Date,
       default: Date.now,
+    },
+    returnDate: {
+      type: Date,
     },
     condition: {
       type: String,

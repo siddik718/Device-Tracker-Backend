@@ -4,6 +4,9 @@ const {
   remove,
   totalEmployee,
   filterEmployee,
+  employees,
+  employee,
+  lastEmployee,
 } = require("../controllers/employee.controller.js");
 
 const { isLoggedIn , updateRecord} = require("../middlewires/auth");
@@ -29,8 +32,15 @@ const validateObjectId = param("empId").custom((value) => {
   return true;
 });
 
-router.get('/',isLoggedIn,totalEmployee);
+
+router.get('/',isLoggedIn,employees);
+router.get('/one',isLoggedIn,lastEmployee);
+
+
+router.get('/count',isLoggedIn,totalEmployee);
 router.get('/search',isLoggedIn,filterEmployee);
+router.get('/:empId',validateObjectId,validateSchema,isLoggedIn,employee);
+
 
 router.post(
   "/",

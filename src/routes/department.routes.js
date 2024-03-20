@@ -3,11 +3,10 @@ const {
   update,
   register,
   remove,
-  department,
   updateManager,
-  numberOfEmployee,
-  findManager,
   noOfDept,
+  Details,
+  deptStat,
 } = require("../controllers/department.controller.js");
 
 const mongoose = require("mongoose");
@@ -30,10 +29,10 @@ const validateObjectId = param("deptId").custom((value) => {
 // const dummy = require("../dummy/department.js");
 // router.post('/dummy',dummy);
 
-router.get("/", isLoggedIn, department);
-router.get('/find-manager',isLoggedIn,findManager)
-router.get('/number-of-employee',isLoggedIn,numberOfEmployee);
-router.get('/departments',isLoggedIn,noOfDept);
+router.get("/", isLoggedIn, noOfDept);
+router.get("/one", isLoggedIn, deptStat);
+
+router.get("/:deptId", validateObjectId, validateSchema,isLoggedIn, Details);
 
 router.post("/add-dept", validateBody, validateSchema, isLoggedIn, register);
 
@@ -47,7 +46,7 @@ router.patch(
 );
 
 router.patch(
-  "/:deptId/update-name",
+  "/:deptId",
   validateObjectId,
   validateBody,
   validateSchema,

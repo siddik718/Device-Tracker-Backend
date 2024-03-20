@@ -1,22 +1,21 @@
 
-const { validateId } = require("../utils/validator");
 const validationSchemaForRecord = {
   device: {
     trim: true,
     notEmpty: {
-      errorMessage: "Device ID must be given",
+      errorMessage: "Device Name must be given",
     },
-    custom: {
-      options: value => validateId(value),
+    isString: {
+      errorMessage: "Device Name must Be String",
     },
   },
   employee: {
     trim: true,
     notEmpty: {
-      errorMessage: "Employee ID must be given",
+      errorMessage: "Employee Name must be given",
     },
-    custom: {
-      options: value => validateId(value),
+    isString: {
+      errorMessage: "Employee Name must Be String",
     },
   },
   condition: {

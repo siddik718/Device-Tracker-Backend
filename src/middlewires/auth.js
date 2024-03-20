@@ -20,6 +20,7 @@ const isLoggedIn = async(req,res,next) => {
     req.org = org;
     next();
   }catch(error) {
+    error.status = 401;
     next(error);
   }
 }

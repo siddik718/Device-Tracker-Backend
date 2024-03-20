@@ -10,6 +10,10 @@ const schema = new Schema(
       type: String,
       required: [true, "Device Type Should be given"],
     },
+    name: {
+      type: String,
+      required: [true, "Device Name Should be given"],
+    },
     description: {
       type: String,
       required: [true, "Description Should be given"],
